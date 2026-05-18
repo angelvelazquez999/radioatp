@@ -1,43 +1,30 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-// @ts-ignore - howler types are not installed in this project
+// @ts-expect-error - howler types are not installed in this project
 import { Howl } from "howler";
 import { motion } from "framer-motion";
 import { Play, Pause, Radio, Volume2 } from "lucide-react";
 
 export default function Home() {
   const soundRef = useRef<Howl | null>(null);
-
   const [playing, setPlaying] = useState(false);
-  const [stars, setStars] = useState<Array<{ top: string; left: string }>>([]);
-  const [visualizerBars, setVisualizerBars] = useState<Array<{ heights: [string, string, string]; duration: number }>>([]);
+  const [visualizerBars] = useState<
+    Array<{ heights: [string, string, string]; duration: number }>
+  >(() =>
+    [...Array(28)].map(() => ({
+      heights: [
+        `${15 + Math.random() * 15}%`,
+        `${45 + Math.random() * 110}%`,
+        `${15 + Math.random() * 15}%`,
+      ],
+      duration: 0.8 + Math.random() * 0.9,
+    }))
+  );
 
   useEffect(() => {
-    // Generate stars positions once on client
-    setStars(
-      [...Array(120)].map(() => ({
-        top: `${Math.random() * 100}%`,
-        left: `${Math.random() * 100}%`,
-      }))
-    );
-
-    // Generate visualizer bars once on client
-    setVisualizerBars(
-      [...Array(32)].map(() => ({
-        heights: [
-          `${20 + Math.random() * 20}%`,
-          `${40 + Math.random() * 100}%`,
-          `${20 + Math.random() * 20}%`,
-        ],
-        duration: 1 + Math.random(),
-      }))
-    );
-
     soundRef.current = new Howl({
-      src: [
-        "https://stream.angelvelazquez.software/radioatp.mp3",
-      ],
+      src: ["https://stream.angelvelazquez.software/radioatp.mp3"],
       html5: true,
       format: ["mp3"],
       volume: 1,
@@ -50,7 +37,6 @@ export default function Home() {
 
   const toggleRadio = () => {
     if (!soundRef.current) return;
-
     if (playing) {
       soundRef.current.pause();
       setPlaying(false);
@@ -61,42 +47,83 @@ export default function Home() {
   };
 
   return (
-    <main className="relative flex min-h-screen overflow-hidden bg-black text-white">
-      {/* Fondo gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#050816] via-black to-[#02040f]" />
+    <main className="relative flex min-h-screen overflow-hidden bg-[#050810] text-white">
 
-      {/* Glow */}
-      <div className="absolute top-[-200px] left-1/2 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-cyan-500/10 blur-3xl" />
+      {/* Fondo base */}
+      <div className="absolute inset-0 bg-[#050810]" />
 
-      {/* Estrellas */}
-      <div className="absolute inset-0 opacity-40">
-        {stars.map((star, i) => (
-          <div
-            key={i}
-            className="absolute h-[2px] w-[2px] rounded-full bg-white"
-            style={{
-              top: star.top,
-              left: star.left,
-            }}
-          />
-        ))}
+      {/* Aurora boreal sutil — glow superior */}
+      <div className="absolute top-[-120px] left-1/2 h-[400px] w-[600px] -translate-x-1/2 rounded-full bg-indigo-900/20 blur-3xl pointer-events-none" />
+      <div className="absolute top-[-60px] left-1/2 h-[200px] w-[300px] -translate-x-1/2 rounded-full bg-violet-900/15 blur-2xl pointer-events-none" />
+
+      {/* Neblina de horizonte inferior */}
+      <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-[#090e24]/60 to-transparent pointer-events-none" />
+
+      {/* ── Estrellas en CSS puro (sin JS, visibles en móvil desde el primer frame) ── */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `
+            radial-gradient(1.5px 1.5px at 12% 8%,  rgba(255,255,255,0.9) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 28% 15%, rgba(255,255,255,0.7) 0%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 45% 6%,  rgba(255,255,255,0.85) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 62% 18%, rgba(255,255,255,0.6) 0%, transparent 100%),
+            radial-gradient(2px   2px   at 78% 9%,  rgba(255,255,255,0.95) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 88% 22%, rgba(255,255,255,0.65) 0%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 5%  30%, rgba(255,255,255,0.75) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 20% 42%, rgba(255,255,255,0.55) 0%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 35% 28%, rgba(255,255,255,0.8) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 52% 38%, rgba(255,255,255,0.6) 0%, transparent 100%),
+            radial-gradient(2px   2px   at 68% 25%, rgba(255,255,255,0.9) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 82% 35%, rgba(255,255,255,0.7) 0%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 92% 12%, rgba(255,255,255,0.85) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 15% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 40% 48%, rgba(255,255,255,0.75) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 72% 52%, rgba(255,255,255,0.6) 0%, transparent 100%),
+            radial-gradient(2px   2px   at 95% 40%, rgba(255,255,255,0.88) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 8%  68%, rgba(255,255,255,0.55) 0%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 55% 62%, rgba(255,255,255,0.8) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 85% 58%, rgba(255,255,255,0.65) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 18% 72%, rgba(255,255,255,0.6) 0%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 32% 78%, rgba(255,255,255,0.7) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 48% 70%, rgba(255,255,255,0.55) 0%, transparent 100%),
+            radial-gradient(2px   2px   at 63% 80%, rgba(255,255,255,0.85) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 77% 74%, rgba(255,255,255,0.6) 0%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 90% 68%, rgba(255,255,255,0.75) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 3%  82%, rgba(255,255,255,0.5) 0%, transparent 100%),
+            radial-gradient(2px   2px   at 25% 88%, rgba(255,255,255,0.8) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 58% 85%, rgba(255,255,255,0.65) 0%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 70% 90%, rgba(255,255,255,0.7) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 10% 20%, rgba(180,200,255,0.6) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 75% 30%, rgba(200,180,255,0.55) 0%, transparent 100%),
+            radial-gradient(1.5px 1.5px at 50% 14%, rgba(180,220,255,0.7) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 93% 75%, rgba(255,255,255,0.6) 0%, transparent 100%)
+          `,
+        }}
+      />
+
+      {/* Luna */}
+      <div className="absolute top-12 right-12 pointer-events-none">
+        <div
+          className="relative w-9 h-9 rounded-full bg-[#e8e4d4]"
+          style={{ boxShadow: "0 0 18px 4px rgba(230,220,180,0.18), 0 0 40px 8px rgba(200,190,140,0.09)" }}
+        >
+          {/* Sombra del crescent */}
+          <div className="absolute top-[3px] right-[1px] w-6 h-[22px] rounded-full bg-[#050810]" />
+        </div>
       </div>
 
-      {/* Contenido */}
-      <div className="relative z-10 flex w-full flex-col items-center justify-center px-6">
+      {/* ── Contenido principal ── */}
+      <div className="relative z-10 flex w-full min-h-screen flex-col items-center justify-center px-6 gap-0">
+
         {/* Badge LIVE */}
         <motion.div
-          animate={{
-            opacity: [0.5, 1, 0.5],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-          }}
-          className="mb-8 flex items-center gap-2 rounded-full border border-red-500/40 bg-red-500/10 px-4 py-2"
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity }}
+          className="mb-7 flex items-center gap-2 rounded-full border border-purple-500/35 bg-purple-500/10 px-4 py-2"
         >
-          <div className="h-2 w-2 rounded-full bg-red-500" />
-          <span className="text-sm tracking-[0.3em] text-red-300">
+          <div className="h-2 w-2 rounded-full bg-purple-400" />
+          <span className="text-[11px] tracking-[0.3em] text-purple-300">
             LIVE TRANSMISSION
           </span>
         </motion.div>
@@ -106,52 +133,51 @@ export default function Home() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1 }}
-          className="mb-10 flex flex-col items-center"
+          className="mb-7 flex flex-col items-center"
         >
-          <div className="mb-5 rounded-full border border-cyan-400/20 bg-cyan-400/10 p-6">
-            <Radio className="h-16 w-16 text-cyan-300" />
+          <div className="mb-4 rounded-full border border-blue-400/20 bg-blue-400/9 p-5">
+            <Radio className="h-12 w-12 text-blue-300" />
           </div>
 
-          <h1 className="text-center text-6xl font-black tracking-[0.2em] text-white">
+          <h1 className="text-center text-5xl font-black tracking-[0.22em] text-white">
             RADIO ATP
           </h1>
 
-          <p className="mt-4 text-center text-sm tracking-[0.5em] text-zinc-400">
+          <p className="mt-3 text-center text-[11px] tracking-[0.5em] text-zinc-400/70">
             SIGNALS FROM THE NIGHT
           </p>
         </motion.div>
 
-        {/* Visualizer fake */}
-        <div className="mb-14 flex h-20 items-end gap-2">
+        {/* Visualizer */}
+        <div className="mb-9 flex h-14 items-end gap-[3px]">
           {visualizerBars.map((bar, i) => (
             <motion.div
               key={i}
-              animate={{
-                height: bar.heights,
-              }}
+              animate={{ height: bar.heights }}
               transition={{
                 duration: bar.duration,
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-              className="w-1 rounded-full bg-cyan-300/70"
+              className="w-[5px] rounded-full bg-blue-400/65"
             />
           ))}
         </div>
 
         {/* Botón Play */}
         <motion.button
-          whileTap={{ scale: 0.95 }}
+          whileTap={{ scale: 0.93 }}
           whileHover={{ scale: 1.05 }}
           onClick={toggleRadio}
-          className="group relative flex h-28 w-28 items-center justify-center rounded-full border border-cyan-300/30 bg-cyan-300/10 backdrop-blur-xl transition"
+          className="relative flex h-24 w-24 items-center justify-center rounded-full border border-blue-300/25 bg-blue-300/9 backdrop-blur-xl mb-5"
         >
-          <div className="absolute inset-0 rounded-full bg-cyan-400/10 blur-2xl transition group-hover:bg-cyan-400/20" />
+          {/* Anillo exterior decorativo */}
+          <div className="absolute inset-[-10px] rounded-full border border-blue-400/10" />
 
           {playing ? (
-            <Pause className="relative z-10 h-10 w-10 text-cyan-200" />
+            <Pause className="relative z-10 h-9 w-9 text-blue-200" />
           ) : (
-            <Play className="relative z-10 ml-1 h-10 w-10 text-cyan-200" />
+            <Play className="relative z-10 ml-1 h-9 w-9 text-blue-200" />
           )}
         </motion.button>
 
@@ -160,14 +186,16 @@ export default function Home() {
           key={playing ? "playing" : "paused"}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-8 text-sm tracking-[0.4em] text-zinc-400"
+          className={`text-[11px] tracking-[0.4em] mb-10 transition-colors duration-500 ${
+            playing ? "text-blue-300/70" : "text-zinc-500"
+          }`}
         >
           {playing ? "NOW TRANSMITTING" : "OFF AIR"}
         </motion.p>
 
         {/* Footer */}
-        <div className="absolute bottom-8 flex items-center gap-2 text-xs tracking-[0.3em] text-zinc-600">
-          <Volume2 className="h-4 w-4" />
+        <div className="flex items-center justify-center gap-2 text-[11px] tracking-[0.25em] text-zinc-600">
+          <Volume2 className="h-3.5 w-3.5 flex-shrink-0" />
           <span>radioatp.angelvelazquez.software</span>
         </div>
       </div>
