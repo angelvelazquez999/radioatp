@@ -36,7 +36,7 @@ export default function Home() {
 
     soundRef.current = new Howl({
       src: [
-        "https://radioatp.angelvelazquez.software/live/radioatp.mp3",
+        "https://stream.angelvelazquez.software/radioatp.mp3",
       ],
       html5: true,
       format: ["mp3"],
