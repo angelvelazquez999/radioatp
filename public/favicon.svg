@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <style>
+      @media (prefers-color-scheme: dark) {
+        .moon-bg { fill: #000; }
+        .moon { fill: #e8e4d4; }
+        .shadow { fill: #050810; }
+      }
+      @media (prefers-color-scheme: light) {
+        .moon-bg { fill: #fff; }
+        .moon { fill: #e8e4d4; }
+        .shadow { fill: #ddd; }
+      }
+    </style>
+  </defs>
+  
+  <!-- Fondo -->
+  <rect class="moon-bg" width="64" height="64"/>
+  
+  <!-- Luna -->
+  <circle class="moon" cx="32" cy="32" r="24"/>
+  
+  <!-- Sombra del creciente -->
+  <circle class="shadow" cx="36" cy="30" r="20"/>
+  
+  <!-- Glow sutil -->
+  <circle cx="32" cy="32" r="24" fill="none" stroke="#e8e4d4" stroke-width="0.5" opacity="0.4"/>
+</svg>
