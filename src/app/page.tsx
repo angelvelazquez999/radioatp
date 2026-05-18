@@ -21,6 +21,11 @@ export default function Home() {
     "Stay weird. Stay soft.",
     "Love is mostly dumb luck.",
     "Nostalgia has an excellent music taste.",
+    "Every city looks prettier when you miss someone.",
+    "There’s always that one song.",
+    "The night is young and emotionally unstable.",
+    "There you are.",
+    "That duck probably didnt understand anything.",
     "Because when you find someone you want to keep around, you do something about it.",
   ];
 
@@ -50,11 +55,11 @@ export default function Home() {
     };
   }, []);
 
-  // Cambiar frase cada 5 segundos
+  // Cambiar frase cada minuto
   useEffect(() => {
     const interval = setInterval(() => {
       setPhraseIndex((prev) => (prev + 1) % phrases.length);
-    }, 5000);
+    }, 30000);
 
     return () => clearInterval(interval);
   }, [phrases.length]);
@@ -172,7 +177,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 1.5 }}
             className="mt-3 text-center text-[11px] tracking-[0.5em] text-zinc-400/70"
           >
             {phrases[phraseIndex]}
