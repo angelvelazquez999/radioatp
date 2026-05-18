@@ -59,7 +59,7 @@ export default function Home() {
   useEffect(() => {
     const interval = setInterval(() => {
       setPhraseIndex((prev) => (prev + 1) % phrases.length);
-    }, 30000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [phrases.length]);
