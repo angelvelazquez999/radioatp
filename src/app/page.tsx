@@ -10,12 +10,13 @@ export default function Home() {
   const soundRef = useRef<Howl | null>(null);
   const [playing, setPlaying] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);
+  const [isActive, setIsActive] = useState(true);
+  const [checkingStatus, setCheckingStatus] = useState(false);
 
   const phrases = [
     "Je pense encore à toi",
     "Suit up.",
     "One more song before reality.",
-    "Kids, this is where it gets interesting.",
     "But sometimes… it does",
     "Some people are just songs in disguise.",
     "Stay weird. Stay soft.",
@@ -42,18 +43,58 @@ export default function Home() {
     }))
   );
 
+  // Función para verificar si hay transmisión disponible
+  const checkStreamAvailability = async () => {
+    setCheckingStatus(true);
+    try {
+      const response = await fetch("https://stream.angelvelazquez.software/radioatp.mp3", {
+        method: "HEAD",
+      });
+      const isAvailable = response.ok || response.status === 206;
+      setIsActive(isAvailable);
+      if (isAvailable && !playing && soundRef.current) {
+        soundRef.current.play();
+        setPlaying(true);
+      }
+    } catch (error) {
+      setIsActive(false);
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
+
   useEffect(() => {
     soundRef.current = new Howl({
       src: ["https://stream.angelvelazquez.software/radioatp.mp3"],
       html5: true,
       format: ["mp3"],
       volume: 1,
+      onloaderror: () => {
+        setIsActive(false);
+        setPlaying(false);
+      },
+      onerror: () => {
+        setIsActive(false);
+        setPlaying(false);
+      },
     });
+
+    // Verificar disponibilidad al cargar
+    checkStreamAvailability();
 
     return () => {
       soundRef.current?.unload();
     };
   }, []);
+
+  // Verificar cada minuto si la transmisión está disponible
+  useEffect(() => {
+    const interval = setInterval(() => {
+      checkStreamAvailability();
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, [playing]);
 
   // Cambiar frase cada minuto
   useEffect(() => {
@@ -65,6 +106,10 @@ export default function Home() {
   }, [phrases.length]);
 
   const toggleRadio = () => {
+    if (!isActive) {
+      alert("NOT YET... Transmisión no disponible");
+      return;
+    }
     if (!soundRef.current) return;
     if (playing) {
       soundRef.current.pause();
@@ -149,11 +194,15 @@ export default function Home() {
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="mb-7 flex items-center gap-2 rounded-full border border-purple-500/35 bg-purple-500/10 px-4 py-2"
+          className={`mb-7 flex items-center gap-2 rounded-full border px-4 py-2 ${
+            isActive
+              ? "border-purple-500/35 bg-purple-500/10"
+              : "border-orange-500/35 bg-orange-500/10"
+          }`}
         >
-          <div className="h-2 w-2 rounded-full bg-purple-400" />
-          <span className="text-[11px] tracking-[0.3em] text-purple-300">
-            LIVE TRANSMISSION
+          <div className={`h-2 w-2 rounded-full ${isActive ? "bg-purple-400" : "bg-orange-400"}`} />
+          <span className={`text-[11px] tracking-[0.3em] ${isActive ? "text-purple-300" : "text-orange-300"}`}>
+            {checkingStatus ? "CHECKING..." : isActive ? "LIVE TRANSMISSION" : "OFFLINE"}
           </span>
         </motion.div>
 
@@ -205,12 +254,19 @@ export default function Home() {
           whileTap={{ scale: 0.93 }}
           whileHover={{ scale: 1.05 }}
           onClick={toggleRadio}
-          className="relative flex h-24 w-24 items-center justify-center rounded-full border border-blue-300/25 bg-blue-300/9 backdrop-blur-xl mb-5"
+          disabled={!isActive}
+          className={`relative flex h-24 w-24 items-center justify-center rounded-full backdrop-blur-xl mb-5 transition ${
+            isActive
+              ? "border border-blue-300/25 bg-blue-300/9 cursor-pointer"
+              : "border border-zinc-600/25 bg-zinc-600/9 cursor-not-allowed opacity-50"
+          }`}
         >
           {/* Anillo exterior decorativo */}
-          <div className="absolute inset-[-10px] rounded-full border border-blue-400/10" />
+          <div className={`absolute inset-[-10px] rounded-full ${isActive ? "border border-blue-400/10" : "border border-zinc-600/10"}`} />
 
-          {playing ? (
+          {!isActive ? (
+            <span className="relative z-10 text-xs text-zinc-400 text-center px-4">NOT YET</span>
+          ) : playing ? (
             <Pause className="relative z-10 h-9 w-9 text-blue-200" />
           ) : (
             <Play className="relative z-10 ml-1 h-9 w-9 text-blue-200" />
@@ -219,14 +275,18 @@ export default function Home() {
 
         {/* Estado */}
         <motion.p
-          key={playing ? "playing" : "paused"}
+          key={playing ? "playing" : isActive ? "paused" : "offline"}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className={`text-[11px] tracking-[0.4em] mb-10 transition-colors duration-500 ${
-            playing ? "text-blue-300/70" : "text-zinc-500"
+            !isActive
+              ? "text-orange-400/70"
+              : playing
+              ? "text-blue-300/70"
+              : "text-zinc-500"
           }`}
         >
-          {playing ? "NOW TRANSMITTING" : "OFF AIR"}
+          {!isActive ? "OFFLINE" : playing ? "NOW TRANSMITTING" : "OFF AIR"}
         </motion.p>
 
         {/* Footer */}
