@@ -9,6 +9,21 @@ import { Play, Pause, Radio, Volume2 } from "lucide-react";
 export default function Home() {
   const soundRef = useRef<Howl | null>(null);
   const [playing, setPlaying] = useState(false);
+  const [phraseIndex, setPhraseIndex] = useState(0);
+
+  const phrases = [
+    "Je pense encore à toi",
+    "Suit up.",
+    "One more song before reality.",
+    "Kids, this is where it gets interesting.",
+    "But sometimes… it does",
+    "Some people are just songs in disguise.",
+    "Stay weird. Stay soft.",
+    "Love is mostly dumb luck.",
+    "Nostalgia has an excellent music taste.",
+    "Because when you find someone you want to keep around, you do something about it.",
+  ];
+
   const [visualizerBars] = useState<
     Array<{ heights: [string, string, string]; duration: number }>
   >(() =>
@@ -34,6 +49,15 @@ export default function Home() {
       soundRef.current?.unload();
     };
   }, []);
+
+  // Cambiar frase cada 5 segundos
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setPhraseIndex((prev) => (prev + 1) % phrases.length);
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [phrases.length]);
 
   const toggleRadio = () => {
     if (!soundRef.current) return;
@@ -143,9 +167,16 @@ export default function Home() {
             RADIO ATP
           </h1>
 
-          <p className="mt-3 text-center text-[11px] tracking-[0.5em] text-zinc-400/70">
-            SIGNALS FROM THE NIGHT
-          </p>
+          <motion.p
+            key={phraseIndex}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.5 }}
+            className="mt-3 text-center text-[11px] tracking-[0.5em] text-zinc-400/70"
+          >
+            {phrases[phraseIndex]}
+          </motion.p>
         </motion.div>
 
         {/* Visualizer */}
