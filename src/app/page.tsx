@@ -298,7 +298,7 @@ export default function Home() {
               : "text-zinc-500"
           }`}
         >
-          {!isStreamActive ? `DISPONIBLE EN ${timeUntilStream}` : playing ? "NOW TRANSMITTING" : "OFF AIR"}
+          DALE PLAY
         </motion.p>
 
         {/* Footer */}
