@@ -18,7 +18,7 @@ export default function Home() {
   const STREAM_MINUTE = 45;
 
   const phrases = [
-    "Je pense encore à toi",
+    "Wait for it...",
     "Suit up.",
     "One more song before reality.",
     "But sometimes… it does",
