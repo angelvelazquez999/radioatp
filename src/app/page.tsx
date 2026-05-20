@@ -5,11 +5,17 @@ import { useEffect, useRef, useState } from "react";
 import { Howl } from "howler";
 import { motion } from "framer-motion";
 import { Play, Pause, Radio, Volume2 } from "lucide-react";
+import Image from "next/image";
 
 export default function Home() {
   const soundRef = useRef<Howl | null>(null);
   const [playing, setPlaying] = useState(false);
   const [phraseIndex, setPhraseIndex] = useState(0);
+  const [isStreamActive, setIsStreamActive] = useState(false);
+  const [timeUntilStream, setTimeUntilStream] = useState("");
+
+  const STREAM_HOUR = 22; // 10 PM (22:00)
+  const STREAM_MINUTE = 35;
 
   const phrases = [
     "Je pense encore à toi",
@@ -28,6 +34,42 @@ export default function Home() {
     "Because when you find someone you want to keep around, you do something about it.",
   ];
 
+  // Verificar si es la hora de transmisión
+  const checkStreamTime = () => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    const isActive =
+      currentHour === STREAM_HOUR && currentMinute >= STREAM_MINUTE;
+
+    setIsStreamActive(isActive);
+
+    if (!isActive) {
+      // Calcular tiempo restante
+      let nextHour = STREAM_HOUR;
+      let nextMinute = STREAM_MINUTE;
+
+      if (currentHour > STREAM_HOUR || (currentHour === STREAM_HOUR && currentMinute >= STREAM_MINUTE)) {
+        nextHour = STREAM_HOUR + 24; // Mañana
+      }
+
+      const now = new Date();
+      const nextStream = new Date();
+      nextStream.setHours(nextHour % 24, nextMinute, 0, 0);
+
+      if (nextStream < now) {
+        nextStream.setDate(nextStream.getDate() + 1);
+      }
+
+      const diffMs = nextStream.getTime() - now.getTime();
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+      setTimeUntilStream(`${hours}h ${minutes}m`);
+    }
+  };
+
   const [visualizerBars] = useState<
     Array<{ heights: [string, string, string]; duration: number }>
   >(() =>
@@ -42,14 +84,31 @@ export default function Home() {
   );
 
   useEffect(() => {
+    // Precargar y configurar el archivo de audio
     soundRef.current = new Howl({
-      src: ["https://stream.angelvelazquez.software/radioatp.mp3"],
+      src: ["/ATP.mp3"],
       html5: true,
+      preload: true,
       format: ["mp3"],
       volume: 1,
+      onload: () => {
+        console.log("Audio cargado exitosamente");
+      },
+      onerror: () => {
+        console.error("Error cargando audio");
+      },
     });
 
+    // Verificar hora inicial
+    checkStreamTime();
+
+    // Verificar cada minuto
+    const interval = setInterval(() => {
+      checkStreamTime();
+    }, 60000);
+
     return () => {
+      clearInterval(interval);
       soundRef.current?.unload();
     };
   }, []);
@@ -64,6 +123,9 @@ export default function Home() {
   }, [phrases.length]);
 
   const toggleRadio = () => {
+    if (!isStreamActive) {
+      return;
+    }
     if (!soundRef.current) return;
     if (playing) {
       soundRef.current.pause();
@@ -148,11 +210,15 @@ export default function Home() {
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="mb-7 flex items-center gap-2 rounded-full border border-purple-500/35 bg-purple-500/10 px-4 py-2"
+          className={`mb-7 flex items-center gap-2 rounded-full border px-4 py-2 ${
+            isStreamActive
+              ? "border-purple-500/35 bg-purple-500/10"
+              : "border-orange-500/35 bg-orange-500/10"
+          }`}
         >
-          <div className="h-2 w-2 rounded-full bg-purple-400" />
-          <span className="text-[11px] tracking-[0.3em] text-purple-300">
-            LIVE TRANSMISSION
+          <div className={`h-2 w-2 rounded-full ${isStreamActive ? "bg-purple-400" : "bg-orange-400"}`} />
+          <span className={`text-[11px] tracking-[0.3em] ${isStreamActive ? "text-purple-300" : "text-orange-300"}`}>
+            {isStreamActive ? "LIVE TRANSMISSION" : `EN VIVO A LAS 10:35 PM`}
           </span>
         </motion.div>
 
@@ -163,8 +229,18 @@ export default function Home() {
           transition={{ duration: 1 }}
           className="mb-7 flex flex-col items-center"
         >
-          <div className="mb-4 rounded-full border border-blue-400/20 bg-blue-400/9 p-5">
+          {/* <div className="mb-4 rounded-full border border-blue-400/20 bg-blue-400/9 p-5">
             <Radio className="h-12 w-12 text-blue-300" />
+          </div> */}
+
+          <div className="mb-4 relative w-48 h-48">
+            <Image
+              src="/her.png"
+              alt="Radio ATP"
+              fill
+              className="object-contain"
+              loading="lazy"
+            />
           </div>
 
           <h1 className="text-center text-5xl font-black tracking-[0.22em] text-white">
@@ -201,15 +277,22 @@ export default function Home() {
 
         {/* Botón Play */}
         <motion.button
-          whileTap={{ scale: 0.93 }}
-          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: isStreamActive ? 0.93 : 1 }}
+          whileHover={{ scale: isStreamActive ? 1.05 : 1 }}
           onClick={toggleRadio}
-          className="relative flex h-24 w-24 items-center justify-center rounded-full border border-blue-300/25 bg-blue-300/9 backdrop-blur-xl mb-5"
+          disabled={!isStreamActive}
+          className={`relative flex h-24 w-24 items-center justify-center rounded-full backdrop-blur-xl mb-5 transition ${
+            isStreamActive
+              ? "border border-blue-300/25 bg-blue-300/9 cursor-pointer"
+              : "border border-zinc-600/25 bg-zinc-600/9 cursor-not-allowed opacity-50"
+          }`}
         >
           {/* Anillo exterior decorativo */}
-          <div className="absolute inset-[-10px] rounded-full border border-blue-400/10" />
+          <div className={`absolute inset-[-10px] rounded-full ${isStreamActive ? "border border-blue-400/10" : "border border-zinc-600/10"}`} />
 
-          {playing ? (
+          {!isStreamActive ? (
+            <span className="relative z-10 text-xs text-zinc-400 text-center px-4">NOT YET</span>
+          ) : playing ? (
             <Pause className="relative z-10 h-9 w-9 text-blue-200" />
           ) : (
             <Play className="relative z-10 ml-1 h-9 w-9 text-blue-200" />
@@ -218,14 +301,18 @@ export default function Home() {
 
         {/* Estado */}
         <motion.p
-          key={playing ? "playing" : "paused"}
+          key={playing ? "playing" : isStreamActive ? "paused" : "offline"}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className={`text-[11px] tracking-[0.4em] mb-10 transition-colors duration-500 ${
-            playing ? "text-blue-300/70" : "text-zinc-500"
+            !isStreamActive
+              ? "text-orange-400/70"
+              : playing
+              ? "text-blue-300/70"
+              : "text-zinc-500"
           }`}
         >
-          {playing ? "NOW TRANSMITTING" : "OFF AIR"}
+          {!isStreamActive ? `DISPONIBLE EN ${timeUntilStream}` : playing ? "NOW TRANSMITTING" : "OFF AIR"}
         </motion.p>
 
         {/* Footer */}
