@@ -14,8 +14,8 @@ export default function Home() {
   const [isStreamActive, setIsStreamActive] = useState(false);
   const [timeUntilStream, setTimeUntilStream] = useState("");
 
-  const STREAM_HOUR = 22; // 10 PM (22:00)
-  const STREAM_MINUTE = 35;
+  const STREAM_HOUR = 23; // 11 PM (23:00)
+  const STREAM_MINUTE = 45;
 
   const phrases = [
     "Je pense encore à toi",
@@ -218,7 +218,7 @@ export default function Home() {
         >
           <div className={`h-2 w-2 rounded-full ${isStreamActive ? "bg-purple-400" : "bg-orange-400"}`} />
           <span className={`text-[11px] tracking-[0.3em] ${isStreamActive ? "text-purple-300" : "text-orange-300"}`}>
-            {isStreamActive ? "LIVE TRANSMISSION" : `EN VIVO A LAS 10:35 PM`}
+            {isStreamActive ? "LIVE TRANSMISSION" : `EN VIVO A LAS 11:45 PM`}
           </span>
         </motion.div>
 
