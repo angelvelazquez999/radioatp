@@ -298,7 +298,7 @@ export default function Home() {
               : "text-zinc-500"
           }`}
         >
-          DALE PLAY
+          DALE PLAY (repetición)
         </motion.p>
 
         {/* Footer */}
