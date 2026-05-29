@@ -38,29 +38,26 @@ export default function Home() {
   const checkStreamTime = () => {
     const now = new Date();
 
-    // Crear una fecha de inicio de "transmisión" a las 11:11 PM de hoy
-    const streamStartToday = new Date();
-    streamStartToday.setHours(STREAM_HOUR, STREAM_MINUTE, 0, 0);
+    // Crear una fecha de 11:11 PM de hoy
+    const today11_11 = new Date();
+    today11_11.setHours(STREAM_HOUR, STREAM_MINUTE, 0, 0);
 
-    // Si aún no ha llegado a las 11:11 PM, la transmisión empezó ayer a esa hora
-    let streamStart = streamStartToday;
-    if (now < streamStartToday) {
-      streamStart = new Date(streamStartToday);
-      streamStart.setDate(streamStart.getDate() - 1);
+    let isActive = false;
+
+    if (now >= today11_11) {
+      // Ya pasó las 11:11 PM de hoy - verificar que no haya pasado las 11:11 PM de mañana
+      const tomorrow11_11 = new Date(today11_11);
+      tomorrow11_11.setDate(tomorrow11_11.getDate() + 1);
+      isActive = now < tomorrow11_11;
     }
-
-    // La transmisión termina a las 11:11 PM del siguiente día
-    const streamEnd = new Date(streamStart);
-    streamEnd.setDate(streamEnd.getDate() + 1);
-
-    const isActive = now >= streamStart && now < streamEnd;
+    // Si now < today11_11, isActive permanece false
 
     setIsStreamActive(isActive);
 
     if (!isActive) {
-      // Calcular tiempo restante hasta las 11:11 PM
-      const nextStream = new Date(streamStartToday);
-      if (now >= streamStartToday) {
+      // Calcular tiempo restante hasta las 11:11 PM de hoy (o mañana si ya pasó)
+      let nextStream = new Date(today11_11);
+      if (now >= today11_11) {
         nextStream.setDate(nextStream.getDate() + 1);
       }
 
