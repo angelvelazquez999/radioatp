@@ -34,31 +34,33 @@ export default function Home() {
     "Because when you find someone you want to keep around, you do something about it.",
   ];
 
-  // Verificar si es la hora de transmisión
+  // Verificar si es la hora de transmisión (desde 11:11 PM hasta 11:11 PM del siguiente día)
   const checkStreamTime = () => {
     const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
 
-    const isActive =
-      currentHour === STREAM_HOUR && currentMinute >= STREAM_MINUTE;
+    // Crear una fecha de inicio de "transmisión" a las 11:11 PM de hoy
+    const streamStartToday = new Date();
+    streamStartToday.setHours(STREAM_HOUR, STREAM_MINUTE, 0, 0);
+
+    // Si aún no ha llegado a las 11:11 PM, la transmisión empezó ayer a esa hora
+    let streamStart = streamStartToday;
+    if (now < streamStartToday) {
+      streamStart = new Date(streamStartToday);
+      streamStart.setDate(streamStart.getDate() - 1);
+    }
+
+    // La transmisión termina a las 11:11 PM del siguiente día
+    const streamEnd = new Date(streamStart);
+    streamEnd.setDate(streamEnd.getDate() + 1);
+
+    const isActive = now >= streamStart && now < streamEnd;
 
     setIsStreamActive(isActive);
 
     if (!isActive) {
-      // Calcular tiempo restante
-      let nextHour = STREAM_HOUR;
-      let nextMinute = STREAM_MINUTE;
-
-      if (currentHour > STREAM_HOUR || (currentHour === STREAM_HOUR && currentMinute >= STREAM_MINUTE)) {
-        nextHour = STREAM_HOUR + 24; // Mañana
-      }
-
-      const now = new Date();
-      const nextStream = new Date();
-      nextStream.setHours(nextHour % 24, nextMinute, 0, 0);
-
-      if (nextStream < now) {
+      // Calcular tiempo restante hasta las 11:11 PM
+      const nextStream = new Date(streamStartToday);
+      if (now >= streamStartToday) {
         nextStream.setDate(nextStream.getDate() + 1);
       }
 
@@ -123,6 +125,9 @@ export default function Home() {
   }, [phrases.length]);
 
   const toggleRadio = () => {
+    if (!isStreamActive) {
+      return;
+    }
     if (!soundRef.current) return;
     if (playing) {
       soundRef.current.pause();
@@ -207,12 +212,16 @@ export default function Home() {
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="mb-7 flex items-center gap-2 rounded-full border border-purple-500/35 bg-purple-500/10 px-4 py-2"
+          className={`mb-7 flex items-center gap-2 rounded-full border px-4 py-2 ${
+            isStreamActive
+              ? "border-purple-500/35 bg-purple-500/10"
+              : "border-orange-500/35 bg-orange-500/10"
+          }`}
         >
-          <div className="h-2 w-2 rounded-full bg-purple-400" />
-          <span className="text-[11px] tracking-[0.3em] text-purple-300">
-            RADIO ATP
-          </span>   
+          <div className={`h-2 w-2 rounded-full ${isStreamActive ? "bg-purple-400" : "bg-orange-400"}`} />
+          <span className={`text-[11px] tracking-[0.3em] ${isStreamActive ? "text-purple-300" : "text-orange-300"}`}>
+            {isStreamActive ? "LIVE TRANSMISSION" : `EN VIVO A LAS 11:11 PM`}
+          </span>
         </motion.div>
 
         {/* Logo */}
@@ -270,15 +279,22 @@ export default function Home() {
 
         {/* Botón Play */}
         <motion.button
-          whileTap={{ scale: 0.93 }}
-          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: isStreamActive ? 0.93 : 1 }}
+          whileHover={{ scale: isStreamActive ? 1.05 : 1 }}
           onClick={toggleRadio}
-          className="relative flex h-24 w-24 items-center justify-center rounded-full backdrop-blur-xl mb-5 transition border border-blue-300/25 bg-blue-300/9 cursor-pointer"
+          disabled={!isStreamActive}
+          className={`relative flex h-24 w-24 items-center justify-center rounded-full backdrop-blur-xl mb-5 transition ${
+            isStreamActive
+              ? "border border-blue-300/25 bg-blue-300/9 cursor-pointer"
+              : "border border-zinc-600/25 bg-zinc-600/9 cursor-not-allowed opacity-50"
+          }`}
         >
           {/* Anillo exterior decorativo */}
-          <div className="absolute inset-[-10px] rounded-full border border-blue-400/10" />
+          <div className={`absolute inset-[-10px] rounded-full ${isStreamActive ? "border border-blue-400/10" : "border border-zinc-600/10"}`} />
 
-          {playing ? (
+          {!isStreamActive ? (
+            <span className="relative z-10 text-xs text-zinc-400 text-center px-4">NOT YET</span>
+          ) : playing ? (
             <Pause className="relative z-10 h-9 w-9 text-blue-200" />
           ) : (
             <Play className="relative z-10 ml-1 h-9 w-9 text-blue-200" />
@@ -298,7 +314,7 @@ export default function Home() {
               : "text-zinc-500"
           }`}
         >
-          DALE PLAY (repetición)
+          {!isStreamActive ? `DISPONIBLE EN ${timeUntilStream}` : playing ? "NOW TRANSMITTING" : "DALE PLAY"}
         </motion.p>
 
         {/* Footer */}
