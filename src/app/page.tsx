@@ -15,7 +15,7 @@ export default function Home() {
   const [timeUntilStream, setTimeUntilStream] = useState("");
 
   const STREAM_HOUR = 23; // 11 PM (23:00)
-  const STREAM_MINUTE = 45;
+  const STREAM_MINUTE = 11;
 
   const phrases = [
     "Wait for it...",
@@ -166,7 +166,7 @@ export default function Home() {
             radial-gradient(1.5px 1.5px at 92% 12%, rgba(255,255,255,0.85) 0%, transparent 100%),
             radial-gradient(1px   1px   at 15% 55%, rgba(255,255,255,0.5) 0%, transparent 100%),
             radial-gradient(1.5px 1.5px at 40% 48%, rgba(255,255,255,0.75) 0%, transparent 100%),
-            radial-gradient(1px   1px   at 72% 52%, rgba(255,255,255,0.6) 0%, transparent 100%),
+            radial-gradient(1px   1px   at 72% 52%, rgba(255,255,255,0.6) 0%, transparent 100%), 
             radial-gradient(2px   2px   at 95% 40%, rgba(255,255,255,0.88) 0%, transparent 100%),
             radial-gradient(1px   1px   at 8%  68%, rgba(255,255,255,0.55) 0%, transparent 100%),
             radial-gradient(1.5px 1.5px at 55% 62%, rgba(255,255,255,0.8) 0%, transparent 100%),
@@ -212,7 +212,7 @@ export default function Home() {
           <div className="h-2 w-2 rounded-full bg-purple-400" />
           <span className="text-[11px] tracking-[0.3em] text-purple-300">
             RADIO ATP
-          </span>
+          </span>   
         </motion.div>
 
         {/* Logo */}
