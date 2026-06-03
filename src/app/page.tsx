@@ -34,39 +34,9 @@ export default function Home() {
     "Because when you find someone you want to keep around, you do something about it.",
   ];
 
-  // Verificar si es la hora de transmisión (desde 11:11 PM hasta 11:11 PM del siguiente día)
+  // Hoy no habrá transmisión - solo repetición disponible
   const checkStreamTime = () => {
-    const now = new Date();
-
-    // Crear una fecha de 11:11 PM de hoy
-    const today11_11 = new Date();
-    today11_11.setHours(STREAM_HOUR, STREAM_MINUTE, 0, 0);
-
-    let isActive = false;
-
-    if (now >= today11_11) {
-      // Ya pasó las 11:11 PM de hoy - verificar que no haya pasado las 11:11 PM de mañana
-      const tomorrow11_11 = new Date(today11_11);
-      tomorrow11_11.setDate(tomorrow11_11.getDate() + 1);
-      isActive = now < tomorrow11_11;
-    }
-    // Si now < today11_11, isActive permanece false
-
-    setIsStreamActive(isActive);
-
-    if (!isActive) {
-      // Calcular tiempo restante hasta las 11:11 PM de hoy (o mañana si ya pasó)
-      let nextStream = new Date(today11_11);
-      if (now >= today11_11) {
-        nextStream.setDate(nextStream.getDate() + 1);
-      }
-
-      const diffMs = nextStream.getTime() - now.getTime();
-      const hours = Math.floor(diffMs / (1000 * 60 * 60));
-      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-      setTimeUntilStream(`${hours}h ${minutes}m`);
-    }
+    setIsStreamActive(true); // Repetición siempre disponible
   };
 
   const [visualizerBars] = useState<
@@ -122,9 +92,6 @@ export default function Home() {
   }, [phrases.length]);
 
   const toggleRadio = () => {
-    if (!isStreamActive) {
-      return;
-    }
     if (!soundRef.current) return;
     if (playing) {
       soundRef.current.pause();
@@ -205,19 +172,15 @@ export default function Home() {
       {/* ── Contenido principal ── */}
       <div className="relative z-10 flex w-full min-h-screen flex-col items-center justify-center px-6 gap-0">
 
-        {/* Badge LIVE */}
+        {/* Badge REPETICIÓN */}
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className={`mb-7 flex items-center gap-2 rounded-full border px-4 py-2 ${
-            isStreamActive
-              ? "border-purple-500/35 bg-purple-500/10"
-              : "border-orange-500/35 bg-orange-500/10"
-          }`}
+          className="mb-7 flex items-center gap-2 rounded-full border border-blue-500/35 bg-blue-500/10 px-4 py-2"
         >
-          <div className={`h-2 w-2 rounded-full ${isStreamActive ? "bg-purple-400" : "bg-orange-400"}`} />
-          <span className={`text-[11px] tracking-[0.3em] ${isStreamActive ? "text-purple-300" : "text-orange-300"}`}>
-            {isStreamActive ? "LIVE TRANSMISSION" : `EN VIVO A LAS 11:11 PM`}
+          <div className="h-2 w-2 rounded-full bg-blue-400" />
+          <span className="text-[11px] tracking-[0.3em] text-blue-300">
+            REPETICIÓN
           </span>
         </motion.div>
 
@@ -276,22 +239,15 @@ export default function Home() {
 
         {/* Botón Play */}
         <motion.button
-          whileTap={{ scale: isStreamActive ? 0.93 : 1 }}
-          whileHover={{ scale: isStreamActive ? 1.05 : 1 }}
+          whileTap={{ scale: 0.93 }}
+          whileHover={{ scale: 1.05 }}
           onClick={toggleRadio}
-          disabled={!isStreamActive}
-          className={`relative flex h-24 w-24 items-center justify-center rounded-full backdrop-blur-xl mb-5 transition ${
-            isStreamActive
-              ? "border border-blue-300/25 bg-blue-300/9 cursor-pointer"
-              : "border border-zinc-600/25 bg-zinc-600/9 cursor-not-allowed opacity-50"
-          }`}
+          className="relative flex h-24 w-24 items-center justify-center rounded-full backdrop-blur-xl mb-5 transition border border-blue-300/25 bg-blue-300/9 cursor-pointer"
         >
           {/* Anillo exterior decorativo */}
-          <div className={`absolute inset-[-10px] rounded-full ${isStreamActive ? "border border-blue-400/10" : "border border-zinc-600/10"}`} />
+          <div className="absolute inset-[-10px] rounded-full border border-blue-400/10" />
 
-          {!isStreamActive ? (
-            <span className="relative z-10 text-xs text-zinc-400 text-center px-4">NOT YET</span>
-          ) : playing ? (
+          {playing ? (
             <Pause className="relative z-10 h-9 w-9 text-blue-200" />
           ) : (
             <Play className="relative z-10 ml-1 h-9 w-9 text-blue-200" />
@@ -300,18 +256,14 @@ export default function Home() {
 
         {/* Estado */}
         <motion.p
-          key={playing ? "playing" : isStreamActive ? "paused" : "offline"}
+          key={playing ? "playing" : "paused"}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className={`text-[11px] tracking-[0.4em] mb-10 transition-colors duration-500 ${
-            !isStreamActive
-              ? "text-orange-400/70"
-              : playing
-              ? "text-blue-300/70"
-              : "text-zinc-500"
+            playing ? "text-blue-300/70" : "text-zinc-500"
           }`}
         >
-          {!isStreamActive ? `DISPONIBLE EN ${timeUntilStream}` : playing ? "NOW TRANSMITTING" : "DALE PLAY"}
+          {playing ? "REPRODUCIENDO" : "DALE PLAY"}
         </motion.p>
 
         {/* Footer */}
