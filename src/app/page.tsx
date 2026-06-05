@@ -13,9 +13,10 @@ export default function Home() {
   const [phraseIndex, setPhraseIndex] = useState(0);
   const [isStreamActive, setIsStreamActive] = useState(false);
   const [timeUntilStream, setTimeUntilStream] = useState("");
+  const [shouldReload, setShouldReload] = useState(false);
 
   const STREAM_HOUR = 23; // 11 PM (23:00)
-  const STREAM_MINUTE = 11;
+  const STREAM_MINUTE = 20;
 
   const phrases = [
     "Wait for it...",
@@ -34,9 +35,39 @@ export default function Home() {
     "Because when you find someone you want to keep around, you do something about it.",
   ];
 
-  // Hoy no habrá transmisión - solo repetición disponible
+  // Verificar si es la hora de transmisión (11:20 PM hoy)
   const checkStreamTime = () => {
-    setIsStreamActive(true); // Repetición siempre disponible
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+
+    // Se habilita solo cuando llega a las 11:20 PM
+    const isActive = currentHour === STREAM_HOUR && currentMinute >= STREAM_MINUTE;
+
+    setIsStreamActive(isActive);
+
+    // Si ya pasamos las 11:20 PM y aún no se habilita, marcar para recarga
+    if (currentHour === STREAM_HOUR && currentMinute >= STREAM_MINUTE && !isActive) {
+      setShouldReload(true);
+    }
+
+    if (!isActive) {
+      // Calcular tiempo restante hasta las 11:20 PM
+      const today = new Date();
+      const streamTime = new Date();
+      streamTime.setHours(STREAM_HOUR, STREAM_MINUTE, 0, 0);
+
+      if (now >= streamTime) {
+        // Ya pasó hoy, siguiente es mañana
+        streamTime.setDate(streamTime.getDate() + 1);
+      }
+
+      const diffMs = streamTime.getTime() - now.getTime();
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+
+      setTimeUntilStream(`${hours}h ${minutes}m`);
+    }
   };
 
   const [visualizerBars] = useState<
@@ -92,6 +123,9 @@ export default function Home() {
   }, [phrases.length]);
 
   const toggleRadio = () => {
+    if (!isStreamActive) {
+      return;
+    }
     if (!soundRef.current) return;
     if (playing) {
       soundRef.current.pause();
@@ -172,15 +206,19 @@ export default function Home() {
       {/* ── Contenido principal ── */}
       <div className="relative z-10 flex w-full min-h-screen flex-col items-center justify-center px-6 gap-0">
 
-        {/* Badge REPETICIÓN */}
+        {/* Badge LIVE */}
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="mb-7 flex items-center gap-2 rounded-full border border-blue-500/35 bg-blue-500/10 px-4 py-2"
+          className={`mb-7 flex items-center gap-2 rounded-full border px-4 py-2 ${
+            isStreamActive
+              ? "border-purple-500/35 bg-purple-500/10"
+              : "border-orange-500/35 bg-orange-500/10"
+          }`}
         >
-          <div className="h-2 w-2 rounded-full bg-blue-400" />
-          <span className="text-[11px] tracking-[0.3em] text-blue-300">
-            REPETICIÓN
+          <div className={`h-2 w-2 rounded-full ${isStreamActive ? "bg-purple-400" : "bg-orange-400"}`} />
+          <span className={`text-[11px] tracking-[0.3em] ${isStreamActive ? "text-purple-300" : "text-orange-300"}`}>
+            {isStreamActive ? "LIVE TRANSMISSION" : `EN VIVO A LAS 11:20 PM`}
           </span>
         </motion.div>
 
@@ -239,15 +277,22 @@ export default function Home() {
 
         {/* Botón Play */}
         <motion.button
-          whileTap={{ scale: 0.93 }}
-          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: isStreamActive ? 0.93 : 1 }}
+          whileHover={{ scale: isStreamActive ? 1.05 : 1 }}
           onClick={toggleRadio}
-          className="relative flex h-24 w-24 items-center justify-center rounded-full backdrop-blur-xl mb-5 transition border border-blue-300/25 bg-blue-300/9 cursor-pointer"
+          disabled={!isStreamActive}
+          className={`relative flex h-24 w-24 items-center justify-center rounded-full backdrop-blur-xl mb-5 transition ${
+            isStreamActive
+              ? "border border-blue-300/25 bg-blue-300/9 cursor-pointer"
+              : "border border-zinc-600/25 bg-zinc-600/9 cursor-not-allowed opacity-50"
+          }`}
         >
           {/* Anillo exterior decorativo */}
-          <div className="absolute inset-[-10px] rounded-full border border-blue-400/10" />
+          <div className={`absolute inset-[-10px] rounded-full ${isStreamActive ? "border border-blue-400/10" : "border border-zinc-600/10"}`} />
 
-          {playing ? (
+          {!isStreamActive ? (
+            <span className="relative z-10 text-xs text-zinc-400 text-center px-4">NOT YET</span>
+          ) : playing ? (
             <Pause className="relative z-10 h-9 w-9 text-blue-200" />
           ) : (
             <Play className="relative z-10 ml-1 h-9 w-9 text-blue-200" />
@@ -256,14 +301,26 @@ export default function Home() {
 
         {/* Estado */}
         <motion.p
-          key={playing ? "playing" : "paused"}
+          key={playing ? "playing" : isStreamActive ? "paused" : "offline"}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className={`text-[11px] tracking-[0.4em] mb-10 transition-colors duration-500 ${
-            playing ? "text-blue-300/70" : "text-zinc-500"
+            !isStreamActive
+              ? "text-orange-400/70"
+              : playing
+              ? "text-blue-300/70"
+              : "text-zinc-500"
           }`}
         >
-          {playing ? "REPRODUCIENDO" : "DALE PLAY"}
+          {shouldReload ? (
+            <span className="text-red-400/70">Recarga la página / Reload page</span>
+          ) : !isStreamActive ? (
+            `DISPONIBLE EN ${timeUntilStream}`
+          ) : playing ? (
+            "NOW TRANSMITTING"
+          ) : (
+            "DALE PLAY"
+          )}
         </motion.p>
 
         {/* Footer */}
