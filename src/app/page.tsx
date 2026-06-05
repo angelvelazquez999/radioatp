@@ -16,7 +16,7 @@ export default function Home() {
   const [shouldReload, setShouldReload] = useState(false);
 
   const STREAM_HOUR = 23; // 11 PM (23:00)
-  const STREAM_MINUTE = 20;
+  const STREAM_MINUTE = 30;
 
   const phrases = [
     "Wait for it...",
