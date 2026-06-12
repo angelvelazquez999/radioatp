@@ -38,42 +38,37 @@ export default function Home() {
   // Transmisión a las 12:02 AM
   const checkStreamTime = () => {
     const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
 
-    // Crear una fecha de 12:02 AM de hoy
-    const today12_02 = new Date();
-    today12_02.setHours(STREAM_HOUR, STREAM_MINUTE, 0, 0);
+    // Determinar la próxima transmisión a las 12:02 AM
+    const nextStream = new Date();
+    nextStream.setHours(STREAM_HOUR, STREAM_MINUTE, 0, 0);
 
-    let isActive = false;
-
-    // Si ya pasó las 12:02 AM de hoy
-    if (now >= today12_02) {
-      // Verificar que no haya pasado las 12:02 AM de mañana
-      const tomorrow12_02 = new Date(today12_02);
-      tomorrow12_02.setDate(tomorrow12_02.getDate() + 1);
-      isActive = now < tomorrow12_02;
-
-      // Si ya pasamos las 12:02 AM y aún no se habilita, marcar para recarga
-      if (currentHour === STREAM_HOUR && currentMinute >= STREAM_MINUTE && !isActive) {
-        setShouldReload(true);
-      }
+    // Si ya pasó las 12:02 AM de hoy, la próxima es mañana
+    if (now >= nextStream) {
+      nextStream.setDate(nextStream.getDate() + 1);
     }
+
+    // El período de transmisión dura 24 horas desde la hora de inicio
+    const streamEnd = new Date(nextStream);
+    streamEnd.setDate(streamEnd.getDate() + 1);
+
+    // Está activo si está entre el inicio y el fin
+    const isActive = now >= nextStream && now < streamEnd;
 
     setIsStreamActive(isActive);
 
     if (!isActive) {
-      // Calcular tiempo restante hasta las 12:02 AM
-      let nextStream = new Date(today12_02);
-      if (now >= today12_02) {
-        nextStream.setDate(nextStream.getDate() + 1);
-      }
-
+      // Calcular tiempo restante
       const diffMs = nextStream.getTime() - now.getTime();
       const hours = Math.floor(diffMs / (1000 * 60 * 60));
       const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
 
       setTimeUntilStream(`${hours}h ${minutes}m`);
+
+      // Si ya pasamos la hora de inicio pero isActive es false, marcar para recarga
+      if (now >= nextStream && !isActive) {
+        setShouldReload(true);
+      }
     }
   };
 
