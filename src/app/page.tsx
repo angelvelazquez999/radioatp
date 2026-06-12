@@ -35,41 +35,9 @@ export default function Home() {
     "Because when you find someone you want to keep around, you do something about it.",
   ];
 
-  // Transmisión a las 12:02 AM
+  // En vivo ahora
   const checkStreamTime = () => {
-    const now = new Date();
-
-    // Determinar la próxima transmisión a las 12:02 AM
-    const nextStream = new Date();
-    nextStream.setHours(STREAM_HOUR, STREAM_MINUTE, 0, 0);
-
-    // Si ya pasó las 12:02 AM de hoy, la próxima es mañana
-    if (now >= nextStream) {
-      nextStream.setDate(nextStream.getDate() + 1);
-    }
-
-    // El período de transmisión dura 24 horas desde la hora de inicio
-    const streamEnd = new Date(nextStream);
-    streamEnd.setDate(streamEnd.getDate() + 1);
-
-    // Está activo si está entre el inicio y el fin
-    const isActive = now >= nextStream && now < streamEnd;
-
-    setIsStreamActive(isActive);
-
-    if (!isActive) {
-      // Calcular tiempo restante
-      const diffMs = nextStream.getTime() - now.getTime();
-      const hours = Math.floor(diffMs / (1000 * 60 * 60));
-      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-
-      setTimeUntilStream(`${hours}h ${minutes}m`);
-
-      // Si ya pasamos la hora de inicio pero isActive es false, marcar para recarga
-      if (now >= nextStream && !isActive) {
-        setShouldReload(true);
-      }
-    }
+    setIsStreamActive(true); // Transmitiendo en vivo
   };
 
   const [visualizerBars] = useState<
