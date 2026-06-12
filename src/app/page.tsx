@@ -35,9 +35,9 @@ export default function Home() {
     "Because when you find someone you want to keep around, you do something about it.",
   ];
 
-  // Transmisión en vivo ahora, próxima a las 12:05 AM de mañana
+  // En pausa - regresamos pronto
   const checkStreamTime = () => {
-    setIsStreamActive(true); // En vivo ahora
+    setIsStreamActive(false); // Desactivado por ahora
   };
 
   const [visualizerBars] = useState<
@@ -93,6 +93,9 @@ export default function Home() {
   }, [phrases.length]);
 
   const toggleRadio = () => {
+    if (!isStreamActive) {
+      return;
+    }
     if (!soundRef.current) return;
     if (playing) {
       soundRef.current.pause();
@@ -177,11 +180,11 @@ export default function Home() {
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ duration: 2, repeat: Infinity }}
-          className="mb-7 flex items-center gap-2 rounded-full border border-purple-500/35 bg-purple-500/10 px-4 py-2"
+          className="mb-7 flex items-center gap-2 rounded-full border border-orange-500/35 bg-orange-500/10 px-4 py-2"
         >
-          <div className="h-2 w-2 rounded-full bg-purple-400" />
-          <span className="text-[11px] tracking-[0.3em] text-purple-300">
-            LIVE TRANSMISSION
+          <div className="h-2 w-2 rounded-full bg-orange-400" />
+          <span className="text-[11px] tracking-[0.3em] text-orange-300">
+            ESPERALO
           </span>
         </motion.div>
 
@@ -240,31 +243,26 @@ export default function Home() {
 
         {/* Botón Play */}
         <motion.button
-          whileTap={{ scale: 0.93 }}
-          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 1 }}
+          whileHover={{ scale: 1 }}
           onClick={toggleRadio}
-          className="relative flex h-24 w-24 items-center justify-center rounded-full backdrop-blur-xl mb-5 transition border border-blue-300/25 bg-blue-300/9 cursor-pointer"
+          disabled={!isStreamActive}
+          className="relative flex h-24 w-24 items-center justify-center rounded-full backdrop-blur-xl mb-5 transition border border-zinc-600/25 bg-zinc-600/9 cursor-not-allowed opacity-50"
         >
           {/* Anillo exterior decorativo */}
-          <div className="absolute inset-[-10px] rounded-full border border-blue-400/10" />
+          <div className="absolute inset-[-10px] rounded-full border border-zinc-600/10" />
 
-          {playing ? (
-            <Pause className="relative z-10 h-9 w-9 text-blue-200" />
-          ) : (
-            <Play className="relative z-10 ml-1 h-9 w-9 text-blue-200" />
-          )}
+          <span className="relative z-10 text-xs text-zinc-400 text-center px-4">WAIT</span>
         </motion.button>
 
         {/* Estado */}
         <motion.p
-          key={playing ? "playing" : "paused"}
+          key="waiting"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className={`text-[11px] tracking-[0.4em] mb-10 transition-colors duration-500 ${
-            playing ? "text-blue-300/70" : "text-zinc-500"
-          }`}
+          className="text-[11px] tracking-[0.4em] mb-10 transition-colors duration-500 text-orange-400/70"
         >
-          {playing ? "NOW TRANSMITTING" : "DALE PLAY"}
+          REGRESAMOS EN UNOS MOMENTOS
         </motion.p>
 
         {/* Footer */}
